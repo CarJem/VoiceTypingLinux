@@ -1,11 +1,20 @@
+# ---- Google Voice Typing with Python ----
+# [    Designed for Valve's Steam Deck    ]
+
+# Lead Programmer: 
+# - Carter "CarJem" Wallace
+#   https://github.com/carjem
+
+# Co Programmer: 
+# - Anguel Esperanza
+#   https://github.com/anguelesperanza
+
 import os
-import speech_recognition as sr
+from subprocess import call
 import subprocess
 import time
 import signal 
-
-#Lead Programmer: Carter "CarJem" Wallace; https://github.com/carjem
-#Co Programmer: Anguel Esperanza; https://github.com/anguelesperanza
+import speech_recognition as sr
 
 rec_process = None
 lock_filename = 'LOCK'
@@ -26,19 +35,20 @@ def have_lock():
     else: return False
 
 def record_wait():
-    i = 0
+    oldepoch = time.time()
     pendingRecordStop = False
     while pendingRecordStop == False:
         result = have_lock()
-        if result: pendingRecordStop = True
-        i += 1
-        time.sleep(1)
-        if i >= 30: update_lock(True)
+        if result: 
+            pendingRecordStop = True
+        if time.time() - oldepoch >= 30: 
+            update_lock(True)
 
 def start_record():
     global rec_process
     cmd = 'arecord -q -t wav -f S32_LE ' + wav_filename
     rec_process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
+    play_sound('start')
 
 def end_record():
     update_lock(False)
@@ -46,6 +56,7 @@ def end_record():
     rec_process.send_signal(signal.SIGINT)
     rec_process.wait()
     rec_process = None
+    play_sound('end')
 
 def stt():
     r = sr.Recognizer()
@@ -57,12 +68,28 @@ def stt():
         text = r.recognize_google(audio_data)
         os.popen('xdotool type "{0}"'.format(text))
 
-def clear_cache():
+def clear_cache(failed):
+    if failed == True:
+        play_sound('fail')
+
     files = os.listdir()
-    if lock_filename in files: os.remove(lock_filename)
-    if wait_filename in files: os.remove(wait_filename)
-    if wav_filename in files: os.remove(wav_filename)
-    if rec_process != None: rec_process.kill()
+    
+    if lock_filename in files: 
+        os.remove(lock_filename)
+    if wait_filename in files: 
+        os.remove(wait_filename)
+    if wav_filename in files: 
+        os.remove(wav_filename)
+    if rec_process != None: 
+        rec_process.kill()
+
+
+def play_sound(type):
+    try:
+        sound_file = "assets/{0}.wav".format(type);
+        call(["aplay", "-q", sound_file])
+    except:
+        print('Something went wrong when trying to play: {0}.wav'.format(type))
 
 def main():
     try:
@@ -70,12 +97,9 @@ def main():
         record_wait()
         end_record()
         stt()
-        clear_cache()
+        clear_cache(False)
     except:
-        clear_cache()
-
-
-    
+        clear_cache(True)
 
 if __name__=='__main__':
     main()
