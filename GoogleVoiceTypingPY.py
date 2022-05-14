@@ -1,7 +1,7 @@
 # ---- Google Voice Typing with Python ----
 # [    Designed for Valve's Steam Deck    ]
 
-# Lead Programmer: 
+# Co Programmer / Inital Idea: 
 # - Carter "CarJem" Wallace
 #   https://github.com/carjem
 
