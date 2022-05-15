@@ -17,48 +17,58 @@ import signal
 import speech_recognition as sr
 
 rec_process = None
+send_filename = 'SEND'
 lock_filename = 'LOCK'
 wait_filename = 'WAIT'
 wav_filename = 'file.wav'
 
-def update_lock(state):
+def setLock(state):
     if state:
         with open(lock_filename, 'w') as f:
-            f.write()
+            f.write('')
     else:
         os.remove(lock_filename)
 
-def have_lock():
-    file_names = os.listdir()
-    if lock_filename in file_names:
-        return True
-    else: return False
+def setSend(state):
+    if state:
+        with open(send_filename, 'w') as f:
+            f.write('')
+    else:
+        os.remove(send_filename)
 
-def record_wait():
+def canSend():
+    file_names = os.listdir()
+    if send_filename in file_names:
+        return True
+    else: 
+        return False
+
+def idleWhileRecording():
     oldepoch = time.time()
     pendingRecordStop = False
     while pendingRecordStop == False:
-        result = have_lock()
+        result = canSend()
         if result: 
             pendingRecordStop = True
         if time.time() - oldepoch >= 30: 
-            update_lock(True)
+            setSend(True)
 
-def start_record():
+def startRecording():
     global rec_process
+    setLock(True)
     cmd = 'arecord -q -t wav -f S32_LE ' + wav_filename
     rec_process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
     play_sound('start')
 
-def end_record():
-    update_lock(False)
+def endRecording():
+    setSend(False)
     global rec_process
     rec_process.send_signal(signal.SIGINT)
     rec_process.wait()
     rec_process = None
     play_sound('end')
 
-def stt():
+def speechToText():
     r = sr.Recognizer()
 
     with sr.AudioFile(wav_filename) as source:
@@ -74,31 +84,35 @@ def clear_cache(failed):
 
     files = os.listdir()
     
-    if lock_filename in files: 
-        os.remove(lock_filename)
+    if send_filename in files: 
+        os.remove(send_filename)
     if wait_filename in files: 
         os.remove(wait_filename)
     if wav_filename in files: 
         os.remove(wav_filename)
+    if lock_filename in files: 
+        os.remove(lock_filename)
     if rec_process != None: 
         rec_process.kill()
 
 
 def play_sound(type):
     try:
-        sound_file = "assets/{0}.wav".format(type);
+        sound_file = "assets/{0}.wav".format(type)
         call(["aplay", "-q", sound_file])
-    except:
+    except Exception as ex:
+        print(ex)
         print('Something went wrong when trying to play: {0}.wav'.format(type))
 
 def main():
     try:
-        start_record()
-        record_wait()
-        end_record()
-        stt()
+        startRecording()
+        idleWhileRecording()
+        endRecording()
+        speechToText()
         clear_cache(False)
-    except:
+    except Exception as ex:
+        print(ex)
         clear_cache(True)
 
 if __name__=='__main__':

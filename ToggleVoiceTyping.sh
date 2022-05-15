@@ -1,5 +1,6 @@
 #!/bin/bash
 WAIT_FILE=WAIT
+SEND_FILE=SEND
 LOCK_FILE=LOCK
 SCRIPT="./GoogleVoiceTypingPY"
 DEV_SCRIPT="python ./GoogleVoiceTypingPY.py"
@@ -17,7 +18,9 @@ run_script() {
 
 if test -f "$WAIT_FILE"; then
     rm "$WAIT_FILE"
-    touch "$LOCK_FILE"
+    touch "$SEND_FILE"
+elif test -f "$LOCK_FILE"; then
+    echo "Can't run multiple instances"
 else
     run_script "$1"
 fi
