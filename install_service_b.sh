@@ -1,10 +1,7 @@
 #!/bin/bash
 
 # SERVICE B
-
-systemctl stop google_voice_typing_b 2> /dev/null
-systemctl disable google_voice_typing_b 2> /dev/null
-rm -f /etc/systemd/system/google_voice_typing_b.service
+./uninstall_service_b.sh
 cat > /etc/systemd/system/google_voice_typing_b.service <<- EOM
 [Unit]
 Description=Google Voice Typing Service (B)

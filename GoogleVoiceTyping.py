@@ -20,6 +20,7 @@ import speech_recognition as sr
 rec_process = None
 send_filename = 'SEND'
 lock_filename = 'LOCK'
+result_filename = 'RESULT'
 wait_filename = 'WAIT'
 wav_filename = 'file.wav'
 
@@ -84,7 +85,8 @@ def speechToText():
         audio_data = r.record(source)
         # recognize (convert from speech to text)
         text = r.recognize_google(audio_data)
-        os.popen('xdotool type "{0}"'.format(text))
+        with open(result_filename, 'w') as f:
+            f.write(text)
 
 def clear_cache(failed):
     if failed == True:
