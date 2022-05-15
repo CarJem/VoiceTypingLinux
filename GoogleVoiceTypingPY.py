@@ -61,7 +61,6 @@ def startRecording():
     play_sound('start')
 
 def endRecording():
-    setSend(False)
     global rec_process
     rec_process.send_signal(signal.SIGINT)
     rec_process.wait()
