@@ -9,6 +9,7 @@
 # - Anguel Esperanza
 #   https://github.com/anguelesperanza
 
+import json
 import os
 from subprocess import call
 import subprocess
@@ -21,6 +22,14 @@ send_filename = 'SEND'
 lock_filename = 'LOCK'
 wait_filename = 'WAIT'
 wav_filename = 'file.wav'
+
+def getAssetFolder():
+    try:
+        f = open('config.json')
+        data = json.loads(f.read())
+        return data['soundFolder']
+    except:
+        return 'assets'
 
 def setLock(state):
     if state:
@@ -96,12 +105,13 @@ def clear_cache(failed):
 
 
 def play_sound(type):
+    asset_folder = getAssetFolder()
     try:
-        sound_file = "assets/{0}.wav".format(type)
+        sound_file = "{0}/{1}.wav".format(asset_folder, type)
         call(["aplay", "-q", sound_file])
     except Exception as ex:
         print(ex)
-        print('Something went wrong when trying to play: {0}.wav'.format(type))
+        print('Something went wrong when trying to play: {0}/{1}.wav'.format(asset_folder, type))
 
 def main():
     try:

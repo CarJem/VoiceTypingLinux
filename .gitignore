@@ -2,3 +2,7 @@ build
 dist
 *.spec
 key.json
+assets_google/end.wav
+assets_google/fail.wav
+assets_google/start.wav
+_service/REQUEST
