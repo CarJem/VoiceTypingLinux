@@ -3,4 +3,7 @@ dist
 *.spec
 key.json
 assets_google
+assets_old
 _service/REQUEST
+WAIT
+config.dev.json

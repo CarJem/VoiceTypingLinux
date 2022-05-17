@@ -1,19 +1,34 @@
 #!/bin/bash
+cd "$(dirname "$0")" || return
 
+# Uninstall Old Services
+./services/scripts/service-core-uninstall.sh
+./services/scripts/service-reloader-uninstall.sh
+sudo -S ./services/scripts/service-listener-uninstall.sh
 
-./uninstall_service_a.sh
-sudo -S ./uninstall_service_b.sh
+# Build Voice-Typing
+pyinstaller -y --console voice-typing.py
 
-pyinstaller GoogleVoiceTyping.py
-cp ./toggle.sh ./dist/GoogleVoiceTyping/toggle.sh
-cp ./config.json ./dist/GoogleVoiceTyping/config.json
-cp -r ./assets ./dist/GoogleVoiceTyping/assets/
-cp -r ./assets_google ./dist/GoogleVoiceTyping/assets_google/
+# Copy Build Output Files
+# cp ./voice-typing-toggle.sh ./dist/voice-typing/voice-typing-toggle.sh
+#cp ./voice-typing-reload-service.sh ./dist/voice-typing/voice-typing-reload-service.sh
+cp -r ./assets ./dist/voice-typing/assets/
 
+if [ -f 'config.dev.json' ]; then
+    cp ./config.dev.json ./dist/voice-typing/config.json
+else
+    cp ./config.json ./dist/voice-typing/config.json
+fi
 
-cd _service ; pyinstaller --onefile service.py ; cd ..
-cp ./_service/dist/service ./dist/GoogleVoiceTyping/service 
+# Build Voice-Typing-Listener-Service
+cd services || return 
+pyinstaller -y --onefile voice-typing-listener-service.py
+cd ..
+echo "$PWD"
 
+cp ./services/dist/voice-typing-listener-service ./dist/voice-typing/voice-typing-listener-service 
 
-./install_service_a.sh
-sudo -S ./install_service_b.sh
+# Install Services
+./services/scripts/service-core-install.sh
+#./services/scripts/service-reloader-install.sh
+sudo -S ./services/scripts/service-listener-install.sh

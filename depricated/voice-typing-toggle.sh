@@ -3,9 +3,7 @@ WAIT_FILE=WAIT
 SEND_FILE=SEND
 LOCK_FILE=LOCK
 REQUEST_FILE=REQUEST
-SCRIPT="./GoogleVoiceTyping"
-
-XDG_RUNTIME_DIR=/run/user/1000
+SCRIPT="./voice-typing"
 
 cd "$(dirname "$0")"
 

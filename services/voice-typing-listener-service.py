@@ -7,6 +7,8 @@ from turtle import delay
 import keyboard
 
 
+
+
 def getKeybind():
     try:
         f = open('config.json')
@@ -25,10 +27,11 @@ def type_result():
         if 'RESULT' in file_names:
             with open('RESULT', 'r') as f:
                 result = f.read()
-            keyboard.write(result, delay=0.05, exact=True)
+            keyboard.write(result, delay=0.05, exact=False)
             os.remove('RESULT')
     except Exception as e:
-        raise e
+        print(repr(e))
+        pass
 
 
 keyboard.add_hotkey(getKeybind(), run_script)
