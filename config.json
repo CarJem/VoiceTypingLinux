@@ -3,5 +3,5 @@
     "azure_region": "<PLACE_AZURE_REGION_HERE>",
     "azure_lang": "en-US",
     "soundFolder": "assets",
-    "keybind": "f14 + help"
+    "keybind": "win+ctrl+z"
 }
