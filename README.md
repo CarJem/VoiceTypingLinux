@@ -1,6 +1,5 @@
-# Google Voice Typing with Python
+# Voice Typing for Linux
 
 - Simple
 - Lightweight
-- Multi-Platform
 - Designed for Steam Deck
