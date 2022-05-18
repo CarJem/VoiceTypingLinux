@@ -10,6 +10,7 @@ pyinstaller -y --console voice-typing.py
 
 # Copy Build Output Files
 cp -r ./assets ./dist/voice-typing/assets/
+cp -r ./ydotool ./dist/voice-typing/ydotool/
 
 if [ -f 'config.dev.json' ]; then
     cp ./config.dev.json ./dist/voice-typing/config.json

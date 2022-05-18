@@ -9,6 +9,7 @@
 # - Anguel Esperanza
 #   https://github.com/anguelesperanza
 
+from concurrent.futures import process
 import json
 import os
 from pickle import NONE
@@ -28,23 +29,18 @@ REQUEST_COMMAND = 'REQUEST'
 
 wav_filename = 'file.wav'
 config_filename = 'config.json'
+config_dev_filename = 'config.dev.json'
 
 wait_time = 15
 
 
 #region Typing Validation
 
-def typingGetResult(srr: str = None) -> bool:
-    typingOutput = None
-    if srr == None:
-        typingOutput = subprocess.check_output(['/usr/bin/xdotool type ""'], shell=True, universal_newlines=True)
-    else:
-        typingOutput = subprocess.check_output(['/usr/bin/xdotool type \"{}\"'.format(srr)], shell=True, universal_newlines=True)
-
-    if "Failed creating new xdo instance" in typingOutput:
-        return False
-    else:
-        return True
+def typingGetResult(srr: str):
+    process = subprocess.Popen(['./ydotool/ydotoold'])
+    time.sleep(1)
+    subprocess.check_output(['./ydotool/ydotool', 'type', '{}'.format(srr)], universal_newlines=True)
+    process.kill()
 
 #endregion
 
@@ -52,7 +48,12 @@ def typingGetResult(srr: str = None) -> bool:
 
 def getConfigEntry(key, defaultValue = None):
     try:
-        f = open(config_filename)
+        if "--DEBUG" in sys.argv:
+            path = config_dev_filename
+        else:
+            path = config_filename
+
+        f = open(path)
         data = json.loads(f.read())
         return data[key]
     except:
@@ -136,9 +137,8 @@ def recordingEnd():
 
 #region Speech
 
-def speechTextToKeyboard(srr) -> bool:
-    wasTypingSuccessful = typingGetResult(srr.text)
-    #wasTypingSuccessful = typingGetResult("Testing")
+def speechTextToKeyboard(srr):
+    typingGetResult(srr.text)
 
     if srr.reason == speechsdk.ResultReason.NoMatch:
         playSound('fail')
@@ -153,9 +153,7 @@ def speechTextToKeyboard(srr) -> bool:
             print("Error details: {}".format(cancelInfo.error_details))
             print("Did you set the speech resource key and region values?")
 
-    return wasTypingSuccessful
-
-def speechToText() -> bool:
+def speechToText():
     speech_key = getConfigEntry('azure_key', None)
     service_region = getConfigEntry('azure_region', None)
     service_lang = getConfigEntry('azure_lang', "en-US")
@@ -163,7 +161,7 @@ def speechToText() -> bool:
     audio_config = speechsdk.audio.AudioConfig(filename=wav_filename)
     speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, language=service_lang, audio_config=audio_config)
     srr = speech_recognizer.recognize_once()
-    return speechTextToKeyboard(srr)
+    speechTextToKeyboard(srr)
 
 #endregion
 
@@ -211,13 +209,8 @@ def serviceLoop():
             elif LOCK_COMMAND in file_names:
                 print("Can't run multiple instances")
             else:
-                if typingGetResult():
-                    subprocess.Popen([serviceGetExecutable()], shell=True)
-                    setCommand(WAIT_COMMAND, True)
-                else:
-                    keepRunning = False
-                    clearCache(False)
-                    serviceRestart()
+                subprocess.Popen([serviceGetExecutable()], shell=True)
+                setCommand(WAIT_COMMAND, True)
 
         time.sleep(1)
 
@@ -225,7 +218,7 @@ def main():
     if '--SERVICE' in sys.argv:
         serviceLoop()
     else:
-        serviceRun()
+       serviceRun()
 
 #endregion
 
